@@ -69,9 +69,6 @@ class TestModule:
         print("\nCHOSEN DATA POINTS: \t", filtered_data)
         # print("\nPREDICTION: \t", predicted_coordinate)
 
-
-
-
 TestingModule = TestModule()
 TestModule.lagrange_test_extrapolation(25, -5, Lagrange_Sample1)
 # TestingModule.direct_test_interpolation(Control_Sample, 3)

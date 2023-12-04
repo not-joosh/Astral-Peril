@@ -24,8 +24,6 @@ class Direct_Method:
         return x, y
     def plot(self):
         pass
-
-
 Direct_Sample = [
     (0, 7.5),
     (2.5, 10.5),

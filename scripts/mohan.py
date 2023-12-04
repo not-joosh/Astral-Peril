@@ -1,6 +1,5 @@
 import pygame
-import random
-
+import os
 class UFO(pygame.sprite.Sprite):
     def __init__(self, x, y, idle_images, moving_images):
         # Attributes
@@ -21,7 +20,7 @@ class UFO(pygame.sprite.Sprite):
     def launch(self, mouse_pos):
         # Step 1: Cap the UFO's speed, the velocity can vary, based on the how far the mouse is from the UFO
         max_speed = 5
-
+        
         # Step 2: Calculate the UFO's velocity based on the mouse's position
         dx = mouse_pos[0] - self.rect.centerx
         dy = mouse_pos[1] - self.rect.centery
@@ -49,4 +48,3 @@ class UFO(pygame.sprite.Sprite):
         else:
             self.current_frame = (self.current_frame + 1) % len(self.idle_images)
             self.image = self.idle_images[self.current_frame]
-            
