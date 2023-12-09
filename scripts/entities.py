@@ -2,6 +2,27 @@ import pygame
 import random
 import math 
 
+class Asteroid(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        # Attributes
+        # Sprite Image & Position
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.health = 100
+        self.defeat = 0
+        self.angle = 0  # New attribute to store the rotation angle
+
+    def update(self):
+        # Rotate the asteroid slowly
+        self.angle += 1  # Increase the angle by 1 degree
+        if self.angle >= 360:
+            self.angle = 0  # Reset the angle to 0 after completing a full rotation
+        # Rotate the image
+        angle_in_radians = math.radians(self.angle)  # Convert the angle to radians
+        self.image = pygame.transform.rotate(self.image, angle_in_radians)  # Rotate the image using the radians angle
+
+
 class Earth(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         # Attributes
@@ -69,7 +90,7 @@ class UFO(pygame.sprite.Sprite):
         else:
             self.current_frame = (self.current_frame + 1) % len(self.idle_images)
             self.image = self.idle_images[self.current_frame]
-            
+                           
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, images):
         # Attributes
@@ -102,7 +123,7 @@ class PowerUps(pygame.sprite.Sprite):
         self.current_frame = 0
         self.collected = False
         self.rect.center = random.randint(640 // 2, 480 - 50), random.randint(50, 480 - 50)
-
+    
     def update(self):
         self.current_frame = (self.current_frame + 1) % len(self.images)
         self.image = self.images[self.current_frame]
