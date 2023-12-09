@@ -67,6 +67,15 @@ class Game:
         self.powerups = []
         for _ in range(num_of_powerups):
             powerup = PowerUps(self.powerups_images)
+            # Check if the powerup overlaps with any existing asteroids
+            overlapping = True
+            while overlapping:
+                powerup.rect.center = random.randint(50, 480), random.randint(50, 430)
+                overlapping = False
+                for asteroid in self.astroids:
+                    if powerup.rect.colliderect(asteroid.rect):
+                        overlapping = True
+                        break
             self.powerups.append(powerup)
             
         # Game Prompts
@@ -87,6 +96,7 @@ class Game:
             image = pygame.image.load(image_path)
             # Scale down the UFO image
             image = pygame.transform.scale(image, (20, 20))
+            image = pygame.transform.rotate(image, 180)  # Rotate the image 180 degrees
             self.bullet_moving_images.append(image)  
         self.bullet = Bullet(-20, 220, self.bullet_moving_images)  # Set initial position of bullet off-screen
 
