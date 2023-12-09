@@ -90,7 +90,7 @@ class UFO(pygame.sprite.Sprite):
         else:
             self.current_frame = (self.current_frame + 1) % len(self.idle_images)
             self.image = self.idle_images[self.current_frame]
-            
+                           
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, images):
         # Attributes
@@ -123,7 +123,7 @@ class PowerUps(pygame.sprite.Sprite):
         self.current_frame = 0
         self.collected = False
         self.rect.center = random.randint(640 // 2, 480 - 50), random.randint(50, 480 - 50)
-
+    
     def update(self):
         self.current_frame = (self.current_frame + 1) % len(self.images)
         self.image = self.images[self.current_frame]
