@@ -30,6 +30,10 @@ class UFO(pygame.sprite.Sprite):
         self.is_moving = False
         self.visited_coords = []
 
+        # Attributes
+        self.armor = 0
+        # self.health = 100
+
     def launch(self, mouse_pos):
         # Step 1: Cap the UFO's speed, the velocity can vary, based on the how far the mouse is from the UFO
         max_speed = 5
@@ -77,6 +81,7 @@ class Bullet(pygame.sprite.Sprite):
         self.velocity = [-10,0]
         
         # self.collide = pygame.rect.colliderect(self.ufo.rect)
+        self.count = 0
     def fire_towards(self, y_in):
         self.rect.x += self.velocity[0]
         self.rect.y += self.velocity[1]
@@ -90,27 +95,14 @@ class Bullet(pygame.sprite.Sprite):
         self.current_frame = (self.current_frame + 1) % len(self.images)
         self.image = self.images[self.current_frame]
 
-# class PowerUp(pygame.sprite.Sprite):
-#     def __init__(self, x, y, image):
-#         # Attributes
-#         # Sprite Image & Position
-#         self.image = image
-#         self.rect = self.image.get_rect()
-#         self.rect.center = (x, y)
+class PowerUps(pygame.sprite.Sprite):
+    def __init__(self, images):
+        self.images = images
+        self.rect = self.images[0].get_rect()
+        self.current_frame = 0
+        self.collected = False
+        self.rect.center = random.randint(640 // 2, 480 - 50), random.randint(50, 480 - 50)
 
-#     def generate(SCREEN_WIDTH, SCREEN_HEIGHT, image):
-#         # Create enemy birds
-# #enemy_birds = pygame.sprite.Group()
-#      for _ in range(5):
-#         x = random.randint(640 // 2, 480 - 50)
-#         y = random.randint(50, 480 - 50)
-#         #enemy_bird = Bird(x, y, image)
-#         #enemy_birds.add(enemy_bird)
-
-#     def apply_power(self, player):
-#         # Apply power to the player
-#         pass
-
-#     def update(self):
-#         # Update the power-up's position or state
-#         pass
+    def update(self):
+        self.current_frame = (self.current_frame + 1) % len(self.images)
+        self.image = self.images[self.current_frame]

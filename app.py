@@ -1,7 +1,7 @@
 import pygame
 import sys
 import time
-from scripts.entities import UFO, Bullet, Earth
+from scripts.entities import UFO, Bullet, Earth, PowerUps
 from scripts.extrapolation.lagrange_method import Lagrange
 
 class Game:
@@ -19,6 +19,17 @@ class Game:
         self.level_clear_rect = self.level_clear.get_rect(center=(640 // 2, 480 // 2))
         self.level_fail = self.font.render("MISSION FAILED", True, (255, 255, 255))
         self.level_fail_rect = self.level_fail.get_rect(center=(640 // 2, 480 // 2))
+
+        #Load powerups
+        self.powerups_images = []
+        for i in range(0, 4):
+            image_path = f"./Data/images/powerups/shield/{i}power.png"
+            image = pygame.image.load(image_path)
+            # Scale down the UFO image
+            image = pygame.transform.scale(image, (30, 30))
+            image.set_colorkey((255, 255, 255))  # Set white color as transparent
+            self.powerups_images.append(image.convert_alpha())
+        self.powerups = PowerUps(self.powerups_images)
 
         # Earth Asset
         image = pygame.image.load("./data/images/player/earth.png")
@@ -97,15 +108,30 @@ class Game:
 
             # Checking if bullet collision worked    
             if self.bullet.rect.colliderect(self.ufo.rect): 
-                print("hit!")
-                self.ufo.defeat = 1    
+                if self.ufo.armor == 0 or self.bullet.count >5: 
+                    print("hit!")
+                    self.ufo.defeat = 1 
+                    self.bullet.count = 0
+                else:
+                    self.bullet.count += 1    
             # Update
             self.ufo.update()
             self.bullet.update()
-
-            # Draw
-            self.display.blit(self.earth.image, self.earth.rect)
+            self.powerups.update()
             
+            # Check if powerup was collected
+            if self.ufo.rect.colliderect(self.powerups.rect):
+                self.powerups.collected = True
+                self.ufo.armor = 1
+                self.bullet.count = 0
+                self.powerups.rect.center = (0,0)
+                print("powerup collected")
+                
+            # Draw
+            self.display.blit(pygame.image.load("./data/images/backdrops/Astralbg.png"), (0,0))
+            self.display.blit(self.earth.image, self.earth.rect)
+            if self.powerups.collected == False:
+                self.display.blit(self.powerups.images[self.powerups.current_frame], self.powerups.rect)
             if self.ufo.defeat == 0 and self.ufo.victory == 0:
                 self.display.blit(self.bullet.image, self.bullet.rect)
                 if self.ufo.is_moving:
