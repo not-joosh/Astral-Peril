@@ -1,7 +1,7 @@
 import pygame
 import sys
 import time
-from scripts.entities import UFO, Enemy
+from scripts.entities import UFO, Bullet, Earth
 from scripts.extrapolation.lagrange_method import Lagrange
 
 class Game:
@@ -23,12 +23,17 @@ class Game:
         # Earth Asset
         image = pygame.image.load("./data/images/player/earth.png")
         self.earth_image = pygame.transform.scale(image, (960, 540))
-        self.earth = Enemy(750,240, self.earth_image)
+        self.earth = Earth(750,240, self.earth_image)
        
-        # Bullet  
-        image = pygame.image.load("./data/images/effects/bullet/03_bullet.png")
-        self.bullet_image = pygame.transform.scale(image, (20, 20))
-        self.bullet = Enemy(640, 220, self.bullet_image)
+        # Load Bullet images
+        self.bullet_moving_images = []
+        for i in range(0, 3):
+            image_path = f"./Data/images/effects/bullet/{i:02d}_bullet.png"
+            image = pygame.image.load(image_path)
+            # Scale down the UFO image
+            image = pygame.transform.scale(image, (20, 20))
+            self.bullet_moving_images.append(image)  
+        self.bullet = Bullet(640, 220, self.bullet_moving_images)
 
         # Load UFO images
         self.ufo_moving_images = []
@@ -82,7 +87,7 @@ class Game:
                 # perform extrapolation and shoot down the UFO. We will then clear the UFO visited lsit
                 if(self.ufo.is_moving or len(self.ufo.visited_coords) > 15): 
                     filtered_data = self.ufo.visited_coords[-9:-2]
-                    prediction = Lagrange.extrapolate_next(self.ufo.visited_coords[-1][0], filtered_data)
+                    prediction = Lagrange.extrapolate_next(self, self.ufo.visited_coords[-1][0], filtered_data)
                     self.bullet.fire_towards(prediction[1])
                     filtered_data.clear()
                 self.ufo.is_moving = False

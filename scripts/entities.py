@@ -1,6 +1,17 @@
 import pygame
 import random
 import math 
+
+class Earth(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        # Attributes
+        # Sprite Image & Position
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.health = 100
+        self.defeat = 0
+
 class UFO(pygame.sprite.Sprite):
     def __init__(self, x, y, idle_images, moving_images):
         # Attributes
@@ -55,14 +66,16 @@ class UFO(pygame.sprite.Sprite):
             self.current_frame = (self.current_frame + 1) % len(self.idle_images)
             self.image = self.idle_images[self.current_frame]
             
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, image):
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, images):
         # Attributes
         # Sprite Image & Position
-        self.image = image
-        self.rect = self.image.get_rect()
+        self.images = images
+        self.current_frame = 0
+        self.rect = self.images[0].get_rect()
         self.rect.center = (x, y)
         self.velocity = [-10,0]
+        
         # self.collide = pygame.rect.colliderect(self.ufo.rect)
     def fire_towards(self, y_in):
         self.rect.x += self.velocity[0]
@@ -74,10 +87,8 @@ class Enemy(pygame.sprite.Sprite):
         # Update the enemy's position or state
         self.rect.x += self.velocity[0]
         self.rect.y += self.velocity[1]
-        #if self.rect.x <= 0:
-            #self.rect.x = 640
-            #self.rect.y = random.randint(50, 480 - 50)
-        #pass
+        self.current_frame = (self.current_frame + 1) % len(self.images)
+        self.image = self.images[self.current_frame]
 
 # class PowerUp(pygame.sprite.Sprite):
 #     def __init__(self, x, y, image):
@@ -103,6 +114,3 @@ class Enemy(pygame.sprite.Sprite):
 #     def update(self):
 #         # Update the power-up's position or state
 #         pass
-    
-
-
