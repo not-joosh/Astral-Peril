@@ -36,8 +36,9 @@ class Game:
             image_path = f"./Data/images/effects/power/{i}power.png"
             image = pygame.image.load(image_path)
             # Scale down the UFO image
-            image = pygame.transform.scale(image, (350, 220))
-            self.powerups_images.append(image)
+            image = pygame.transform.scale(image, (30, 30))
+            image.set_colorkey((255, 255, 255))  # Set white color as transparent
+            self.powerups_images.append(image.convert_alpha())
         self.powerups = PowerUps(self.powerups_images)
         # Load UFO images
         self.ufo_moving_images = []
@@ -101,8 +102,13 @@ class Game:
 
             # Checking if bullet collision worked    
             if self.bullet.rect.colliderect(self.ufo.rect): 
-                print("hit!")
-                self.ufo.defeat = 1    
+                if self.ufo.armor == 0 or self.bullet.count >5: 
+                    print("hit!")
+                    self.ufo.defeat = 1 
+                    self.bullet.count = 0
+                else:
+                    self.bullet.count += 1   
+                
             # Update
             self.ufo.update()
             self.bullet.update()
@@ -111,6 +117,8 @@ class Game:
             if self.ufo.rect.colliderect(self.powerups.rect):
                 self.powerups.collected = True
                 self.ufo.armor = 1
+                self.bullet.count = 0
+                self.powerups.rect.center = (0,0)
                 print("powerup collected")
             # Draw
             self.display.blit(pygame.image.load("./data/images/background/Astralbg.png"), (0,0))

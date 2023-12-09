@@ -64,6 +64,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.velocity = [-10,0]
+        self.count = 0
         # self.collide = pygame.rect.colliderect(self.ufo.rect)
     def fire_towards(self, y_in):
         self.rect.x += self.velocity[0]
