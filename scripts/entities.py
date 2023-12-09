@@ -1,6 +1,17 @@
 import pygame
 import random
 import math 
+
+class Earth(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
+        # Attributes
+        # Sprite Image & Position
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.health = 100
+        self.defeat = 0
+
 class UFO(pygame.sprite.Sprite):
     def __init__(self, x, y, idle_images, moving_images):
         # Attributes
@@ -12,13 +23,16 @@ class UFO(pygame.sprite.Sprite):
         self.current_frame = 0
         self.victory = 0
         self.defeat = 0
-        self.armor = 0
         # Physics Attributes
         self.velocity = [0, 0]
 
         # Movement Attributes
         self.is_moving = False
         self.visited_coords = []
+
+        # Attributes
+        self.armor = 0
+        # self.health = 100
 
     def launch(self, mouse_pos):
         # Step 1: Cap the UFO's speed, the velocity can vary, based on the how far the mouse is from the UFO
@@ -56,16 +70,18 @@ class UFO(pygame.sprite.Sprite):
             self.current_frame = (self.current_frame + 1) % len(self.idle_images)
             self.image = self.idle_images[self.current_frame]
             
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, x, y, image):
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, images):
         # Attributes
         # Sprite Image & Position
-        self.image = image
-        self.rect = self.image.get_rect()
+        self.images = images
+        self.current_frame = 0
+        self.rect = self.images[0].get_rect()
         self.rect.center = (x, y)
         self.velocity = [-10,0]
-        self.count = 0
+        
         # self.collide = pygame.rect.colliderect(self.ufo.rect)
+        self.count = 0
     def fire_towards(self, y_in):
         self.rect.x += self.velocity[0]
         self.rect.y += self.velocity[1]
@@ -76,10 +92,8 @@ class Enemy(pygame.sprite.Sprite):
         # Update the enemy's position or state
         self.rect.x += self.velocity[0]
         self.rect.y += self.velocity[1]
-        #if self.rect.x <= 0:
-            #self.rect.x = 640
-            #self.rect.y = random.randint(50, 480 - 50)
-        #pass
+        self.current_frame = (self.current_frame + 1) % len(self.images)
+        self.image = self.images[self.current_frame]
 
 class PowerUps(pygame.sprite.Sprite):
     def __init__(self, images):
@@ -92,20 +106,3 @@ class PowerUps(pygame.sprite.Sprite):
     def update(self):
         self.current_frame = (self.current_frame + 1) % len(self.images)
         self.image = self.images[self.current_frame]
-#     def generate(SCREEN_WIDTH, SCREEN_HEIGHT, image):
-#         # Create enemy birds
-# #enemy_birds = pygame.sprite.Group()
-#      for _ in range(5):
-#         x = random.randint(640 // 2, 480 - 50)
-#         y = random.randint(50, 480 - 50)
-#         #enemy_bird = Bird(x, y, image)
-#         #enemy_birds.add(enemy_bird)
-
-#     def apply_power(self, player):
-#         # Apply power to the player
-#         pass
-
-#     def update(self):
-#         # Update the power-up's position or state
-#         pass
-    
