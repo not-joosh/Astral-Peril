@@ -1,6 +1,6 @@
 import pygame
 import random
-
+import math 
 class UFO(pygame.sprite.Sprite):
     def __init__(self, x, y, idle_images, moving_images):
         # Attributes
@@ -11,6 +11,7 @@ class UFO(pygame.sprite.Sprite):
         self.rect.center = (x, y)
         self.current_frame = 0
         self.victory = 0
+        self.defeat = 0
         # Physics Attributes
         self.velocity = [0, 0]
 
@@ -35,10 +36,13 @@ class UFO(pygame.sprite.Sprite):
         # Step 4: Set the UFO's is_moving boolean to True
         self.is_moving = True
 
-        # Step 5: Add the UFO's current position to the visited_coords list
-        self.visited_coords.append(self.rect.center)
+        # Step 5: Check if the current x value is already in the visited_coords list
+        current_x = self.rect.centerx
+        if current_x not in [coord[0] for coord in self.visited_coords]:
+            # Step 6: Add the UFO's current position to the visited_coords list
+            self.visited_coords.append((self.rect.centerx, self.rect.centery))
 
-        # Step 6: Update the UFO's position
+        # Step 7: Update the UFO's position
         self.rect.center = (self.rect.centerx + self.velocity[0], self.rect.centery + self.velocity[1])
         if self.rect.center[0] >= 536:
             self.victory = 1 
@@ -58,32 +62,22 @@ class Enemy(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
-        self.velocity = [5,5]
+        self.velocity = [-10,0]
         # self.collide = pygame.rect.colliderect(self.ufo.rect)
-    def extrapolate_next(self, x, data_points): #using Lagrange for AI attacks
-        needs_sum = []   # mutable list of Li(x0)(), Li(x1)(), Li(x2)(), Li(x3)()
-        for i in range(data_points.__len__()):
-            prodOfLi_n = 1
-            temp = 1
-            for j in range(data_points.__len__()):
-                if i != j: 
-                    prodOfLi_n *= (x - data_points[j][0]) / (data_points[i][0] - data_points[j][0])
-                    temp = prodOfLi_n * data_points[i][1] # Li * fx
-            needs_sum.append(temp)
-        fx = 0
-        for i in range(needs_sum.__len__()):
-            fx += needs_sum[i]
-        self.rect.center = (int(x), int(fx))
-        self.rect.x = int(x)
-        self.rect.y = int(fx)
-
-        #return result
-    
+    def fire_towards(self, y_in):
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        if self.rect.x <= 0:
+            self.rect.x = 640
+            self.rect.y = y_in
     def update(self):
         # Update the enemy's position or state
         self.rect.x += self.velocity[0]
-        self.rect.y += self.velocity[1] 
-        pass
+        self.rect.y += self.velocity[1]
+        #if self.rect.x <= 0:
+            #self.rect.x = 640
+            #self.rect.y = random.randint(50, 480 - 50)
+        #pass
 
 # class PowerUp(pygame.sprite.Sprite):
 #     def __init__(self, x, y, image):
