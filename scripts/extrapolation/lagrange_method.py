@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 class Lagrange:
     # def __init__(self, game, visited):
     #     self.game = game
@@ -20,23 +19,4 @@ class Lagrange:
             fx += needs_sum[i]
         result = (int(x), int(fx))
         return result
-    def plot(self, data_points, extrapolated_point):
-        x_values = [point[0] for point in data_points]
-        y_values = [point[1] for point in data_points]
-
-        plt.scatter(x_values, y_values, color='blue', label='Data Points')
-        plt.scatter(extrapolated_point[0], extrapolated_point[1], color='red', label='Extrapolated Point')
-
-        # Plotting the line connecting the data points
-        x_range = max(x_values) - min(x_values)
-        x_min = min(x_values) - 0.1 * x_range
-        x_max = max(x_values) + 0.1 * x_range
-        x_values_line = [x_min + i * (x_max - x_min) / 100 for i in range(101)]
-        y_values_line = [self.extrapolate_next(x, data_points)[1] for x in x_values_line]
-        plt.plot(x_values_line, y_values_line, color='green', label='Extrapolation Line')
-
-        plt.xlabel('X')
-        plt.ylabel('Y')
-        plt.title('Lagrange Extrapolation')
-        plt.legend()
-        plt.show()
+    

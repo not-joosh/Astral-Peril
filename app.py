@@ -1,28 +1,44 @@
 import pygame
 import sys
 import time
-from scripts.entities import UFO, Enemy
+from scripts.entities import UFO, Enemy, PowerUps
+from scripts.extrapolation.lagrange_method import Lagrange
 
 class Game:
     def __init__(self):
         # Initialize the Game Window
-        self.timer = 50
         pygame.init()
         pygame.display.set_caption("Astral Peril")
         self.screen = pygame.display.set_mode((640, 480))
         self.display = pygame.Surface((640, 480))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None,36)
+
+        # Game Prompts
         self.level_clear = self.font.render("MISSION SUCCESS", True, (255, 255, 255))
         self.level_clear_rect = self.level_clear.get_rect(center=(640 // 2, 480 // 2))
         self.level_fail = self.font.render("MISSION FAILED", True, (255, 255, 255))
         self.level_fail_rect = self.level_fail.get_rect(center=(640 // 2, 480 // 2))
+
+        # Earth Asset
         image = pygame.image.load("./data/images/player/earth.png")
         self.earth_image = pygame.transform.scale(image, (960, 540))
         self.earth = Enemy(750,240, self.earth_image)
+       
+        # Bullet  
         image = pygame.image.load("./data/images/effects/bullet/03_bullet.png")
-        self.attack_image = pygame.transform.scale(image, (20, 20))
-        self.attack = Enemy(640,220, self.attack_image)
+        self.bullet_image = pygame.transform.scale(image, (20, 20))
+        self.bullet = Enemy(640, 220, self.bullet_image)
+
+        #Load powerups
+        self.powerups_images = []
+        for i in range(0, 4):
+            image_path = f"./Data/images/effects/power/{i}power.png"
+            image = pygame.image.load(image_path)
+            # Scale down the UFO image
+            image = pygame.transform.scale(image, (350, 220))
+            self.powerups_images.append(image)
+        self.powerups = PowerUps(self.powerups_images)
         # Load UFO images
         self.ufo_moving_images = []
         self.ufo_idle_images = []
@@ -40,11 +56,19 @@ class Game:
             self.ufo_idle_images.append(image)
         self.ufo = UFO(15, 120, self.ufo_idle_images, self.ufo_moving_images)
 
+
+
+        # Game Mechanic Variables
+        self.timer = 50
+    
     def run(self):
         while True:
-            # Setting Fill
+
+            # Clearing the Screen
             self.display.fill((0, 0, 0))
-            # Listing Event Scenarios
+            
+            
+            # Game Events
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -57,35 +81,44 @@ class Game:
                         #set a whie loop that loops ufo.launch until timer for 2 seconds expires
                         self.ufo.is_moving = True
                         self.ufo.target = pygame.mouse.get_pos() 
-            # Check if the UFO stopped moving across the screen
-            # If it did, set the UFO.is_moving to false
-            if self.ufo.is_moving and self.timer > 0:
+
+            # Check if the UFO stopped moving across the screen. If it did, set the UFO.is_moving to false
+            if self.ufo.is_moving and self.timer > 0 and len(self.ufo.visited_coords) < 15:
                 self.timer -= 1
                 self.ufo.launch(self.ufo.target) # Mouse Coordinate
-            # if self.attack.collide == True:
-            #     print("hit!")
             else:
-                if(self.ufo.is_moving):
-                    print(self.ufo.visited_coords)
-  
-                    # print length of list for me in python
-                    # print(len(self.ufo.visited_coords))
-                    # Maybe call lagrange here because it stopped moving here
-                    # We would flush, then call lagrange, and shoot the bitch possibly.
+                # If it is not moving anymore or if there is more than 15 data points, then we will
+                # perform extrapolation and shoot down the UFO. We will then clear the UFO visited lsit
+                if(self.ufo.is_moving or len(self.ufo.visited_coords) > 15): 
+                    filtered_data = self.ufo.visited_coords[-9:-2]
+                    prediction = Lagrange.extrapolate_next(self, self.ufo.visited_coords[-1][0], filtered_data)
+                    self.bullet.fire_towards(prediction[1])
+                    filtered_data.clear()
                 self.ufo.is_moving = False
                 self.timer = 50
-            if self.attack.rect.colliderect(self.ufo.rect):
+                self.ufo.visited_coords.clear()
+
+
+            # Checking if bullet collision worked    
+            if self.bullet.rect.colliderect(self.ufo.rect): 
                 print("hit!")
                 self.ufo.defeat = 1    
             # Update
             self.ufo.update()
-            self.attack.update()
+            self.bullet.update()
+            self.powerups.update()
 
+            if self.ufo.rect.colliderect(self.powerups.rect):
+                self.powerups.collected = True
+                self.ufo.armor = 1
+                print("powerup collected")
             # Draw
+            self.display.blit(pygame.image.load("./data/images/background/Astralbg.png"), (0,0))
             self.display.blit(self.earth.image, self.earth.rect)
-            
+            if self.powerups.collected == False:
+                self.display.blit(self.powerups.images[self.powerups.current_frame], self.powerups.rect)
             if self.ufo.defeat == 0 and self.ufo.victory == 0:
-                self.display.blit(self.attack.image, self.attack.rect)
+                self.display.blit(self.bullet.image, self.bullet.rect)
                 if self.ufo.is_moving:
                     self.display.blit(self.ufo.moving_images[self.ufo.current_frame], self.ufo.rect)
                 else:
@@ -100,4 +133,3 @@ class Game:
             self.clock.tick(60)  # Decreased the frames per second to 60
 if __name__ == "__main__":
     Game().run()
-

@@ -1,6 +1,6 @@
 from lagrange_method import Lagrange
 from direct_method import Direct_Method
-import matplotlib.pyplot as plt
+
 #-:-:-:-:---:-:--:-:-:-:---:-:--:-:-:-:---:-:-
 #
 # Control Samples
@@ -48,7 +48,7 @@ class TestModule:
             print("\nCHOSEN DATA POINTS: \t", filtered_data)
             print("\nPREDICTION: \t", predicted_coordinate)
             print("\nEXPECTED: \t", dataset[-1], "\n\n\n")
-            lagrange_test_obj.plot(filtered_data, predicted_coordinate)
+        
     def lagrange_test_interpolation(weight1, weight2, dataset):
             print("Interpolation not supported...")
     def direct_test_extrapolation(weight1, weight2, dataset):
