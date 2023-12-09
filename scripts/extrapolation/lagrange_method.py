@@ -11,7 +11,7 @@ class Lagrange:
             prodOfLi_n = 1
             temp = 1
             for j in range(data_points.__len__()):
-                if i != j: 
+                if i != j and data_points[i][0] != data_points[j][0]: 
                     prodOfLi_n *= (x - data_points[j][0]) / (data_points[i][0] - data_points[j][0])
                     temp = prodOfLi_n * data_points[i][1] # Li * fx
             needs_sum.append(temp)
