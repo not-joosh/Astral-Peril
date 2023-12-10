@@ -4,7 +4,7 @@ import pygame
 import sys
 import time
 import random
-from scripts.entities import UFO, Bullet, Earth, PowerUps, Explosion, Debree
+from scripts.entities import UFO, Bullet, Earth, PowerUps, Explosion, Debree, Aura
 from scripts.extrapolation.lagrange_method import Lagrange
 import random
 
@@ -31,6 +31,18 @@ class Game:
             image = pygame.transform.scale(image, (60, 60))
             self.explosion_images.append(image)
         self.explosion = Explosion(0, 0, self.explosion_images)
+        
+        # Setting up Aura Effect
+        self.aura_images = []
+        for i in range(0, 8):
+            image_path = f"./Data/images/effects/aura/{i:02d}_aura.png"
+            image = pygame.image.load(image_path)
+            # Scale down the UFO image
+            image = pygame.transform.scale(image, (60, 60))
+            # lets remove all black pixels from the images
+            image.set_colorkey((0, 0, 0))
+            self.aura_images.append(image)
+        self.aura = Aura(0, 0, self.aura_images)
 
         # Background Setup
         self.background_offset = 0
@@ -305,20 +317,19 @@ class Game:
 
 #--------------------- UFO AURA ---------------------#
             if self.ufo.armor > 0:
-                aura_radius = 60
-                aura_color = (0, 255, 0)  # Green color for the aura
-                aura_center = (self.ufo.rect.centerx, self.ufo.rect.centery)
-                pygame.draw.circle(self.display, aura_color, aura_center, aura_radius, 3)
-            else:
-                #remove aura if it exists
-                aura_radius = 60
-                aura_color = (0, 0, 0)  # Black color for the aura
-                aura_center = (self.ufo.rect.centerx, self.ufo.rect.centery)
-                pygame.draw.circle(self.display, aura_color, aura_center, aura_radius, 3)
+                # Draw aura
                 
-            # # Draw debris
-            # for debris in self.debris:
-            #     self.display.blit(debris.image, debris.rect)
+                # Cycle through aura images
+                self.aura.current_frame += 1
+                if self.aura.current_frame >= len(self.aura.images):
+                    self.aura.current_frame = 0
+                aura_image = self.aura.images[self.aura.current_frame]
+                aura_rect = aura_image.get_rect(center=self.ufo.rect.center)
+                self.display.blit(aura_image, aura_rect)
+                
+            # Draw debris
+            for debris in self.debris:
+                self.display.blit(debris.image, debris.rect)
 
             # Draw asteroids
             self.angle += 1  # Increase the angle of rotation
@@ -341,6 +352,7 @@ class Game:
                 self.display.blit(self.level_fail, self.level_fail_rect)
             elif self.ufo.victory == 1:
                 self.display.blit(self.level_clear, self.level_clear_rect)
+                self.ufo.armor = 0
             
             # Draw explosion
             if(self.explosion.life_span > 0):
