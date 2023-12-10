@@ -4,7 +4,7 @@ import pygame
 import sys
 import time
 import random
-from scripts.entities import UFO, Bullet, Earth, PowerUps
+from scripts.entities import UFO, Bullet, Earth, PowerUps, Explosion, Debree
 from scripts.extrapolation.lagrange_method import Lagrange
 import random
 
@@ -17,8 +17,26 @@ class Game:
         self.display = pygame.Surface((640, 480))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None,36)
-        num_of_powerups = 3
-        
+
+        # Game Mechanic Variables
+        self.timer = 50
+        num_of_powerups = random.randint(3, 10)
+
+        # Setting up Explosion Effects
+        self.explosion_images = []
+        for i in range(0, 7):
+            image_path = f"./Data/images/effects/explosion/{i:02d}_explosion.png"
+            image = pygame.image.load(image_path)
+            # Scale down the UFO image
+            image = pygame.transform.scale(image, (60, 60))
+            self.explosion_images.append(image)
+        self.explosion = Explosion(0, 0, self.explosion_images)
+
+        # Background Setup
+        self.background_offset = 0
+        self.background_image = pygame.image.load("./data/images/backdrops/Astralbg.png")
+        self.background_image_reverse = pygame.transform.flip(self.background_image, True, False)
+
         # Astroid Setup
         self.astroid_images = []
         for i in range(0, 7):
@@ -54,6 +72,37 @@ class Game:
             self.astroids.append(astroid)
         self.rotation_directions = [1, 1, 1, -1, -1] * (len(self.astroids) // len(self.rotation_directions))
         self.rotation_directions += [1] * (len(self.astroids) % len(self.rotation_directions))
+
+        # Debree Setup
+        self.debree_images = []
+        for i in range(0, 5):
+            image_path = f"./Data/images/decors/debree/{i:02d}_debree.png"
+            image = pygame.image.load(image_path)
+            image = pygame.transform.scale(image, (20, 20))
+            self.debree_images.append(image)
+        self.debree = Debree(0, 0, self.debree_images)
+        # Scatter debris randomly across the screen
+        num_of_debris = random.randint(5, 10)
+        self.debris = []
+        for _ in range(num_of_debris):
+            debris = pygame.sprite.Sprite()
+            debris.image = self.debree_images[random.randint(0, len(self.debree_images) - 1)]
+            debris.rect = debris.image.get_rect()
+            debris.rect.center = random.randint(50, 480), random.randint(50, 430)
+            # Check if the debris overlaps with any existing debris or asteroids
+            overlapping = True
+            while overlapping:
+                debris.rect.center = random.randint(50, 480), random.randint(50, 430)
+                overlapping = False
+                for existing_debris in self.debris:
+                    if debris.rect.colliderect(existing_debris.rect):
+                        overlapping = True
+                        break
+                for asteroid in self.astroids:
+                    if debris.rect.colliderect(asteroid.rect):
+                        overlapping = True
+                        break
+            self.debris.append(debris)
 
         #Load powerups
         self.powerups_images = []
@@ -117,9 +166,6 @@ class Game:
             self.ufo_idle_images.append(image)
         self.ufo = UFO(15, 232, self.ufo_idle_images, self.ufo_moving_images)
 
-        # Game Mechanic Variables
-        self.timer = 50
-        
         # Load Music & Sound Effects
         pygame.mixer.music.load("./Data/sounds/bg-music/bgMusic.mp3")
         pygame.mixer.music.set_volume(0.5)  # Set the volume to 50% (adjust as needed)
@@ -127,10 +173,9 @@ class Game:
         self.sound_effects = {
             "bullet": pygame.mixer.Sound("./Data/sounds/sound-fx/bullet_fx.mp3"),
             "powerup": pygame.mixer.Sound("./Data/sounds/sound-fx/powerup_fx.mp3"),
-            # "bullet": pygame.mixer.Sound("./Data/sounds/effects/bullet.wav"),
-            # "powerup": pygame.mixer.Sound("./Data/sounds/effects/powerup.wav"),
-            # "victory": pygame.mixer.Sound("./Data/sounds/effects/victory.wav"),
-            # "defeat": pygame.mixer.Sound("./Data/sounds/effects/defeat.wav")
+            "ufo": pygame.mixer.Sound("./Data/sounds/sound-fx/ufo_fx2.mp3"),
+            "astroid": pygame.mixer.Sound("./Data/sounds/sound-fx/astroid_fx2.mp3"),
+            "explosion": pygame.mixer.Sound("./Data/sounds/sound-fx/explosion_fx2.mp3")
         }
     def run(self):
         while True:
@@ -138,8 +183,7 @@ class Game:
             # Clearing the Screen
             self.display.fill((0, 0, 0))
             
-            
-            # Game Events
+#--------------------- GAME EVENTS ---------------------#
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -152,7 +196,11 @@ class Game:
                         #set a whie loop that loops ufo.launch until timer for 2 seconds expires
                         self.ufo.is_moving = True
                         self.ufo.target = pygame.mouse.get_pos() 
+                        # play ufo sound
+                        self.sound_effects["ufo"].set_volume(500)  # Set the volume to maximum (1.0)
+                        self.sound_effects["ufo"].play()
 
+#--------------------- UFO MOVING ---------------------#
             # Check if the UFO stopped moving across the screen. If it did, set the UFO.is_moving to false
             if self.ufo.is_moving and self.timer > 0 and len(self.ufo.visited_coords) < 15:
                 self.timer -= 1
@@ -175,20 +223,21 @@ class Game:
                 self.timer = 50
                 self.ufo.visited_coords.clear()
 
-
+#--------------------- BULLET ---------------------#
             # Checking if bullet collision worked    
             if self.bullet.rect.colliderect(self.ufo.rect):
-                if self.ufo.armor == 0 or self.bullet.count is 1: 
+                if self.ufo.armor >= 1:
+                    self.bullet.count = 1
+                    self.bullet.rect.x = -20
+                    self.ufo.armor -= 1
+                else:
                     print("hit!")
                     self.ufo.defeat = 1 
                     self.bullet.count = 0
-                else:
-                    self.bullet.count = 1    # Increments Bullet Count
-                    self.bullet.rect.x = -20 # Resets the Bullet
-
-
-
-
+                    self.explosion.rect = self.ufo.rect
+                    self.explosion.life_span = 10
+                    self.sound_effects["explosion"].play()
+#--------------------- ASTROIDS ---------------------#
             # Check collision with asteroids
             for asteroid in self.astroids:
                 if self.ufo.rect.colliderect(asteroid.rect):
@@ -204,19 +253,20 @@ class Game:
                     # Update the UFO position gradually
                     self.ufo.target = (new_x, new_y)
                     self.ufo.is_moving = True
-            
+                    self.sound_effects["astroid"].play()
+                    
             
             # Update
             self.ufo.update()
             self.bullet.update()
             for powerup in self.powerups:
                 powerup.update()
-            
+#--------------------- POWERUPS ---------------------#
             # Check if powerup was collected
             for powerup in self.powerups:
                 if self.ufo.rect.colliderect(powerup.rect):
                     powerup.collected = True
-                    self.ufo.armor = 1
+                    self.ufo.armor += 1
                     self.bullet.count = 0
                     powerup.rect.center = (0, 0)
                     # We need to reset the bullet position
@@ -224,9 +274,52 @@ class Game:
                     self.sound_effects["powerup"].play()
 
 
-            # Draw
-            self.display.blit(pygame.image.load("./data/images/backdrops/Astralbg.png"), (0,0))
+#--------------------- DRAWING ---------------------#
+            # Draw background
+            self.background_offset += 1  # Increase the background offset
+            background_rect = self.background_image.get_rect()
+            background_rect.x -= self.background_offset  # Adjust the x-coordinate based on the offset
+            self.display.blit(self.background_image, background_rect)
+            # Draw reverse background
+            reverse_background_rect = self.background_image_reverse.get_rect()
+            reverse_background_rect.x = background_rect.x + background_rect.width
+            self.display.blit(self.background_image_reverse, reverse_background_rect)
+            # Check if the background offset exceeds the width of the image
+            if self.background_offset >= background_rect.width:
+                # Calculate the remaining offset after reaching the end of the image
+                remaining_offset = self.background_offset - background_rect.width
+                # Draw the remaining portion of the background at the beginning of the image
+                remaining_rect = self.background_image.get_rect()
+                remaining_rect.x = -remaining_offset
+                self.display.blit(self.background_image, remaining_rect)
+                # Draw the remaining portion of the reverse background at the end of the image
+                remaining_reverse_rect = self.background_image_reverse.get_rect()
+                remaining_reverse_rect.x = remaining_rect.x + remaining_rect.width
+                self.display.blit(self.background_image_reverse, remaining_reverse_rect)
+                # Reset the background offset to the remaining offset
+                self.background_offset = remaining_offset
+                # Flip the background images
+                self.background_image, self.background_image_reverse = self.background_image_reverse, self.background_image
             self.display.blit(self.earth.image, self.earth.rect)
+
+
+#--------------------- UFO AURA ---------------------#
+            if self.ufo.armor > 0:
+                aura_radius = 60
+                aura_color = (0, 255, 0)  # Green color for the aura
+                aura_center = (self.ufo.rect.centerx, self.ufo.rect.centery)
+                pygame.draw.circle(self.display, aura_color, aura_center, aura_radius, 3)
+            else:
+                #remove aura if it exists
+                aura_radius = 60
+                aura_color = (0, 0, 0)  # Black color for the aura
+                aura_center = (self.ufo.rect.centerx, self.ufo.rect.centery)
+                pygame.draw.circle(self.display, aura_color, aura_center, aura_radius, 3)
+                
+            # # Draw debris
+            # for debris in self.debris:
+            #     self.display.blit(debris.image, debris.rect)
+
             # Draw asteroids
             self.angle += 1  # Increase the angle of rotation
             for i, astroid in enumerate(self.astroids):
@@ -249,10 +342,22 @@ class Game:
             elif self.ufo.victory == 1:
                 self.display.blit(self.level_clear, self.level_clear_rect)
             
+            # Draw explosion
+            if(self.explosion.life_span > 0):
+                if self.explosion.current_frame < len(self.explosion.images):
+                    self.display.blit(self.explosion.images[self.explosion.current_frame], self.explosion.rect)
+                    self.explosion.current_frame += 1
+                    self.explosion.life_span = self.explosion.life_span - 1
+                else:
+                    self.explosion.current_frame = 0
+
             self.screen.blit(pygame.transform.scale(self.display, (640, 480)), (0, 0))
             pygame.display.update()
             self.clock.tick(60)  # Decreased the frames per second to 60
             # lets print the mouse x coordinates
-            print(pygame.mouse.get_pos())
+            # print(pygame.mouse.get_pos())
+            print(self.ufo.armor)
+
+#--------------------- MAIN ---------------------#
 if __name__ == "__main__":
     Game().run()
