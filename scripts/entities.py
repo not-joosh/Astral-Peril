@@ -90,7 +90,7 @@ class UFO(pygame.sprite.Sprite):
         else:
             self.current_frame = (self.current_frame + 1) % len(self.idle_images)
             self.image = self.idle_images[self.current_frame]
-            
+                           
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, images):
         # Attributes
@@ -123,7 +123,52 @@ class PowerUps(pygame.sprite.Sprite):
         self.current_frame = 0
         self.collected = False
         self.rect.center = random.randint(640 // 2, 480 - 50), random.randint(50, 480 - 50)
-
+    
     def update(self):
         self.current_frame = (self.current_frame + 1) % len(self.images)
         self.image = self.images[self.current_frame]
+
+class Explosion(pygame.sprite.Sprite):
+    def __init__(self, x, y, images):
+        self.x = x
+        self.y = y
+        self.images = images
+        self.current_frame = 0
+        self.frame_rate = 10
+        self.last_frame_time = 0
+        self.life_span = 0
+
+class Debree(pygame.sprite.Sprite):
+    def __init__(self, x, y, images):
+        self.x = x
+        self.y = y
+        self.images = images
+        self.current_frame = 0
+        self.frame_rate = 10
+        self.last_frame_time = 0
+        self.life_span = 0
+        self.velocity = [0,0]
+        self.rect = self.images[0].get_rect()
+        self.rect.center = (x, y)
+    def update(self):
+        # Update the enemy's position or state
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+        self.current_frame = (self.current_frame + 1) % len(self.images)
+        self.image = self.images[self.current_frame]
+        self.life_span += 1
+        if self.life_span >= 100:
+            self.kill()
+
+class Aura(pygame.sprite.Sprite):
+    def __init__(self, x, y, images):
+        self.x = x
+        self.y = y
+        self.images = images
+        self.current_frame = 0
+        self.frame_rate = 10
+        self.last_frame_time = 0
+        self.life_span = 0
+        self.velocity = [0,0]
+        self.rect = self.images[0].get_rect()
+        self.rect.center = (x, y)
