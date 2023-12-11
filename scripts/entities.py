@@ -159,6 +159,7 @@ class Debree(pygame.sprite.Sprite):
         self.life_span += 1
         if self.life_span >= 100:
             self.kill()
+
 class Aura(pygame.sprite.Sprite):
     def __init__(self, x, y, images):
         self.x = x
@@ -171,12 +172,3 @@ class Aura(pygame.sprite.Sprite):
         self.velocity = [0,0]
         self.rect = self.images[0].get_rect()
         self.rect.center = (x, y)
-    # def update(self):
-    #     # Update the enemy's position or state
-    #     self.rect.x += self.velocity[0]
-    #     self.rect.y += self.velocity[1]
-    #     self.current_frame = (self.current_frame + 1) % len(self.images)
-    #     self.image = self.images[self.current_frame]
-    #     self.life_span += 1
-    #     if self.life_span >= 100:
-    #         self.kill()
