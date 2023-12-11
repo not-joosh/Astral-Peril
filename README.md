@@ -14,8 +14,8 @@ Astral Peril is an exhilarating space adventure where you control a UFO (alien) 
 
 
 # Contributers and Developers
-- Holchi Alin | [GitHub](https://github.com/Ruujiii)
-- Mohan Francis | [GitHub](https://github.com/ccgarcia99)
+- Holchi Alin | [GitHub](https://github.com/itsHolchi)
+- Mohan Francis | [GitHub](https://github.com/IMMOEfr)
 - Josh Ratificar | [GitHub](https://github.com/not-joosh)
 
 # How to Set Up Locally
