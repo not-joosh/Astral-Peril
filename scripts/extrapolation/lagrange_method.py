@@ -1,8 +1,5 @@
 import matplotlib.pyplot as plt
 class Lagrange:
-    # def __init__(self, game, visited):
-    #     self.game = game
-    #     self.visited = visited
     def __init__(self):
         pass
     def extrapolate_next(self, x, data_points):
